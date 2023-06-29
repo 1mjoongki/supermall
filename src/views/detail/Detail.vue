@@ -3,8 +3,9 @@
     <detail-nav-bar
       class="detail-nav"
       @titleClick="titleClick"
+      ref="nav"
     ></detail-nav-bar>
-    <scroll class="content" ref="scroll">
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll">
       <detail-swiper :top-images="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
       <detail-shop-info :shop="shop"></detail-shop-info>
@@ -16,6 +17,10 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo"></detail-comment-info>
       <goods-list ref="recommend" :goods="recommends"></goods-list>
     </scroll>
+
+    <detail-bottom-bar @addCart="addToCart"></detail-bottom-bar>
+
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
   </div>
 </template>
 
@@ -27,6 +32,8 @@ import DetailShopInfo from "./childComps/DetailShopInfo.vue";
 import DetailGoodsInfo from "./childComps/DetailGoodsInfo.vue";
 import DetailPramaInfo from "./childComps/DetailPramaInfo.vue";
 import DetailCommentInfo from "./childComps/DetailCommentInfo.vue";
+import DetailBottomBar from "./childComps/DetailBottomBar.vue"
+// import BackTop from "@/components/content/backTop/BackTop.vue";
 
 import Scroll from "@/components/common/scroll/Scroll.vue";
 import GoodsList from "@/components/content/goods/GoodsList.vue";
@@ -39,7 +46,7 @@ import {
   getRecommend,
 } from "@/network/detail";
 import { debounce } from "@/common/utils";
-import { itemListenerMixin } from "@/common/mixin";
+import { itemListenerMixin, backTopMixin } from "@/common/mixin";
 
 export default {
   name: "Detail",
@@ -53,6 +60,8 @@ export default {
     DetailPramaInfo,
     DetailCommentInfo,
     GoodsList,
+    DetailBottomBar,
+    // BackTop,
   },
   data() {
     return {
@@ -65,9 +74,11 @@ export default {
       commentInfo: {},
       recommends: [],
       themeTopYs: [],
+      currentIndex: 0,
+      // isShowBackTop: false,
     };
   },
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin, backTopMixin],
   created() {
     // 1.保存传入的iid
     this.iid = this.$route.params.iid;
@@ -75,7 +86,7 @@ export default {
     // 2.根据iid请求详情数据
     getDatail(this.iid).then((res) => {
       // 1.获取顶部的图片轮播图数据
-      // console.log(res);
+      console.log(res);
       const data = res.result;
       this.topImages = data.itemInfo.topImages;
 
@@ -124,12 +135,55 @@ export default {
       this.themeTopYs.push(this.$refs.params.$el.offsetTop)
       this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
       this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+      this.themeTopYs.push(Number.MAX_VALUE)
       console.log(this.themeTopYs);
     },
     titleClick(index) {
       // console.log(index);
       this.$refs.scroll.scrollTo(0, -this.themeTopYs[index], 100)
-  },
+    },
+    contentScroll(position) {
+      //注意！！！！
+      //往下拉的时候y值是负数
+      const positionY = -position.y
+      let length = this.themeTopYs.length
+      // for (let i = 0; i < length; i++) {
+      //   if ( this.currentIndex !== i && (i < length - 1 && positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i + 1]) || (i === length - 1 && positionY >= this.themeTopYs[i])) {
+      //     this.currentIndex = i
+      //     console.log(this.currentIndex);
+      //     this.$refs.nav.currentIndex = this.currentIndex
+      //   } 
+      // }
+
+      for(let i = 0; i < length - 1; i++) {
+        if(this.currentIndex !== i && (positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i + 1])) {
+          this.currentIndex = i
+          this.$refs.nav.currentIndex = this.currentIndex
+        }
+      }
+
+      //是否回到顶部
+      //混入
+      this.listenShowBackTop(position)
+    },
+    // listenShowBackTop(position) {
+    //   this.isShowBackTop = -position.y > 1000;
+    // }
+    // backClick() {
+    //   this.$refs.scroll.scrollTo(0, 0, 500);
+    // },
+    addToCart() {
+      // 1.获取购物车需要展示的信息
+      const product = {}
+      product.image = this.topImages[0]
+      product.title = this.goods.title
+      product.desc = this.goods.desc
+      product.price = this.goods.realPrice
+      product.iid = this.iid
+
+      // 2.将商品添加到购物车里
+      this.$store.dispatch('addCart', product)
+    },
   },
 };
 </script>
@@ -149,6 +203,7 @@ export default {
 }
 
 .content {
-  height: calc(100% - 44px);
+  background-color: #fff;
+  height: calc(100% - 44px - 49px);
 }
 </style>

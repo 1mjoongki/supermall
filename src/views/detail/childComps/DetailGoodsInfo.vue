@@ -18,10 +18,7 @@
 		name: "DetailGoodsInfo",
     props: {
       detailInfo: {
-        type: Object,
-        default() {
-          return {}
-        }
+        type: Object
       }
     },
     data() {
@@ -48,6 +45,7 @@
 <style scoped>
   .goods-info {
     padding: 20px 0;
+    position: relative;
     border-bottom: 5px solid #f2f5f8;
   }
 

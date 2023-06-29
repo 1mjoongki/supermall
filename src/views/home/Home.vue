@@ -46,11 +46,11 @@ import FeatureView from "./childComps/FeatureView.vue";
 import TabControl from "@/components/content/tabControl/TabControl.vue";
 import GoodsList from "@/components/content/goods/GoodsList.vue";
 import Scroll from "@/components/common/scroll/Scroll.vue";
-import BackTop from "@/components/content/backTop/BackTop.vue";
+// import BackTop from "@/components/content/backTop/BackTop.vue";
 
 import { getHomeMultidata, getHomeGoods } from "@/network/home";
 import { debounce } from "@/common/utils";
-import { itemListenerMixin } from "@/common/mixin";
+import { itemListenerMixin, backTopMixin } from "@/common/mixin";
 
 export default {
   components: {
@@ -61,7 +61,7 @@ export default {
     TabControl,
     GoodsList,
     Scroll,
-    BackTop,
+    // BackTop,
   },
   data() {
     return {
@@ -73,14 +73,14 @@ export default {
         sell: { page: 0, list: [] },
       },
       currentType: "pop",
-      isShowBackTop: false,
+      // isShowBackTop: false,
       tabOffsetTop: 0,
       isTabfixed: false,
       saveY: 0,
       itemImgListener: null,
     };
   },
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin, backTopMixin],
   computed: {
     showGoods() {
       return this.goods[this.currentType].list;
@@ -123,12 +123,14 @@ export default {
       this.$refs.tabControl1.currentIndex = index
       this.$refs.tabControl2.currentIndex = index
     },
-    backClick() {
-      this.$refs.scroll.scrollTo(0, 0, 500);
-    },
+    // backClick() {
+    //   this.$refs.scroll.scrollTo(0, 0, 500);
+    // },
     contentScroll(position) {
       // 1.判断BackTop是否显示
-      this.isShowBackTop = -position.y > 1000;
+      // this.isShowBackTop = -position.y > 1000;
+      //混入
+      this.listenShowBackTop(position)
 
       // 2.决定tabControl是否吸顶（position：fixed）
       this.isTabfixed = -position.y > this.tabOffsetTop;
