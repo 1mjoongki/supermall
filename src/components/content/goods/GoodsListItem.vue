@@ -1,7 +1,8 @@
 <template>
   <div class="goods-item" @click="itemClick">
-    <!-- 咋每次都忘记动态绑点捏！！！！ -->
-    <img :src="showImage" alt="" @load="imageLoad">
+    <!-- 咋每次都忘记动态绑点捏！！！！ src要动态绑定,现在换成v-lazy了-->
+    <!-- 第四步把src换成v-lazy -->
+    <img v-lazy="showImage" alt="" @load="imageLoad">
     <div class="goods-info">
       <p>{{ goodsItem.title }}</p>
       <span class="price">{{ goodsItem.price }}</span>

@@ -21,6 +21,7 @@
     <detail-bottom-bar @addCart="addToCart"></detail-bottom-bar>
 
     <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+    <!-- <toast :message="message" :show="show"></toast> -->
   </div>
 </template>
 
@@ -37,6 +38,7 @@ import DetailBottomBar from "./childComps/DetailBottomBar.vue"
 
 import Scroll from "@/components/common/scroll/Scroll.vue";
 import GoodsList from "@/components/content/goods/GoodsList.vue";
+// import Toast from "@/components/common/toast/Toast.vue"
 
 import {
   getDatail,
@@ -47,6 +49,7 @@ import {
 } from "@/network/detail";
 import { debounce } from "@/common/utils";
 import { itemListenerMixin, backTopMixin } from "@/common/mixin";
+import { mapActions } from "vuex";
 
 export default {
   name: "Detail",
@@ -61,6 +64,7 @@ export default {
     DetailCommentInfo,
     GoodsList,
     DetailBottomBar,
+    // Toast,
     // BackTop,
   },
   data() {
@@ -75,6 +79,8 @@ export default {
       recommends: [],
       themeTopYs: [],
       currentIndex: 0,
+      // message: '',
+      // show: false,
       // isShowBackTop: false,
     };
   },
@@ -128,6 +134,7 @@ export default {
     this.$bus.$off("itemImageLoad", this.itemImgListener);
   },
   methods: {
+    ...mapActions(['addCart']),//也可以用对象的方式
     imageLoad() {
       this.$refs.scroll.refresh();
       this.themeTopYs = []
@@ -181,8 +188,18 @@ export default {
       product.price = this.goods.realPrice
       product.iid = this.iid
 
-      // 2.将商品添加到购物车里
-      this.$store.dispatch('addCart', product)
+      // 2.将商品添加到购物车里(1.promise 2.mapActions)
+      // this.$store.dispatch('addCart', product).then(res => console.log(res))
+      this.addCart(product).then(res => {
+        // this.message = res
+        // this.show = true
+
+        // setTimeout(() => {
+        //   this.show = false
+        //   this.message = ''
+        // }, 1500)
+        this.$toast.show(res, 1500)
+      })
     },
   },
 };
@@ -205,5 +222,7 @@ export default {
 .content {
   background-color: #fff;
   height: calc(100% - 44px - 49px);
+  /* 为啥加了这个滑轮滚动页面bug就没了????? */
+  overflow: hidden;
 }
 </style>
